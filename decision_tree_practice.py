@@ -37,10 +37,34 @@ sc.fit(X_train)
 x_train_nor=sc.transform(X_train)
 x_test_nor=sc.transform(X_test)
 
-tree=DecisionTreeClassifier(criterion='entropy') 
+tree=DecisionTreeClassifier(criterion='entropy',max_depth=2) 
 tree_clf=tree.fit(x_train_nor,y_train)
 
 y_test_predicted = tree_clf.predict(x_test_nor)
 
 accuracy = accuracy_score(y_test, y_test_predicted)
-print('準確率:',accuracy)
+print('training 準確率:',accuracy)
+
+test_data = pd.read_csv("test.csv",names = col_names)
+
+data_clean = test_data.replace(regex=[r'\?|\$'],value=np.nan)
+
+test = data_clean.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
+
+label_encoder = preprocessing.LabelEncoder()
+for col in col_names:
+    if (col in ['fnlwht','education-num','capital-gain','capital-loss','hours-per-week','age'] ):
+        continue
+    encoded = label_encoder.fit_transform(test[col])
+    test[col] = encoded
+
+xtest = test[col_names[:14]]
+ytest = test[col_names[14]]
+
+p = tree_clf.predict(xtest)
+accuracy = accuracy_score(ytest, p)
+print('testing 準確率:',accuracy)
+
+
+
+
